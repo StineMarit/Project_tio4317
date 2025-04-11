@@ -2,8 +2,8 @@
 ==============================================================================
 Dep. Variable:          exchange_rate   No. Observations:                   72
 Model:                 ARIMA(3, 1, 1)   Log Likelihood                  23.808
-Date:                Mon, 31 Mar 2025   AIC                            -25.615
-Time:                        12:22:25   BIC                             -0.726
+Date:                Fri, 11 Apr 2025   AIC                            -25.615
+Time:                        12:18:55   BIC                             -0.726
 Sample:                    01-01-2018   HQIC                           -15.717
                          - 12-01-2023                                         
 Covariance Type:                  opg                                         
@@ -30,6 +30,14 @@ Prob(H) (two-sided):                  0.00   Kurtosis:                         5
 
 Warnings:
 [1] Covariance matrix calculated using the outer product of gradients (complex-step).
-Ljung-Box test results:
-     lb_stat  lb_pvalue
+Ljung-Box Test Results:     lb_stat  lb_pvalue
 10  0.066701        1.0
+
+Augmented Dickey-Fuller Test:
+ADF Statistic: -65.31973409217014
+P-value: 0.0
+Critical Values: {'1%': -3.526004646825607, '5%': -2.9032002348069774, '10%': -2.5889948363419957}
+
+Shapiro-Wilk Test:
+Statistic: 0.17960166931152344
+P-value: 4.265302234709259e-18

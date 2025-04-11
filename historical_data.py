@@ -5,16 +5,13 @@ import yfinance as yf
 import math
 
 
-# Todo: group questions
-"""
-    - Freq: average to monthly
-    - SSB categories check (cpi, gdp), trade balance of commodities (aka goods)
-    - Seasonally adjusted: cpi, gdp. Unadjusted: trade, oil, gas.
-    - Remaining: check stationarity (mean and variance) for differencing needs
-"""
-
-
 def get_request_dataframe(url, params):
+    """
+    Functions that uses HTTP requests to load data and return a dataframe with the monthly average.
+    :param url: URL for data location
+    :param params: Parameters for request
+    :return: Monthly average in Pandas Dataframe with timestamp index
+    """
     # Make request
     r = requests.get(url, params=params)
     if r.status_code != 200:
@@ -33,6 +30,9 @@ def get_request_dataframe(url, params):
 
 
 def get_exchange_rates(start_date, end_date, rate):
+    """
+    Loads the exchange rate for the given period using Norges Bank API
+    """
     url = f"https://data.norges-bank.no/api/data/EXR/B.{rate.upper()}.NOK.SP?"
     params = {
         'format': 'sdmx-json',
@@ -46,7 +46,9 @@ def get_exchange_rates(start_date, end_date, rate):
 
 
 def get_interest_rates(start_date, end_date):
-    # Iterate through data for government bonds and treasury bills
+    """
+    Loads the interest rate for the given period using Norges Bank API
+    """
     url = f"https://data.norges-bank.no/api/data/IR/B.KPRA.SD.?"
     params = {
         'format': 'sdmx-json',
@@ -60,8 +62,11 @@ def get_interest_rates(start_date, end_date):
 
 
 def get_cpi(start_date, end_date):
+    """
+    Loads the monthly change in percent for the consumer price index for the given period using SSB API
+    """
     df = pd.read_csv("https://data.ssb.no/api/v0/dataset/1086.csv?lang=en", encoding="ISO-8859-1")
-    df = df[df['contents'] == 'Monthly change (per cent)']  # Consumer Price Index (2015=100), 12-month rate (percent), Monthly change (per cent)
+    df = df[df['contents'] == 'Monthly change (per cent)']
     df.index = df['month'].apply(lambda row: pd.Timestamp(row.replace('M', '-')+'-01'))
     df = df[(df.index >= start_date) & (df.index <= end_date)]
     df.drop(columns=['consumption group', 'month', 'contents'], inplace=True)
@@ -70,9 +75,13 @@ def get_cpi(start_date, end_date):
 
 
 def get_gdp(start_date, end_date):
+    """
+    Loads the seasonally adjusted monthly change in percent for the
+    gross domestic product for the given period using SSB API
+    """
     df = pd.read_csv("https://data.ssb.no/api/v0/dataset/615167.csv?lang=en", encoding="ISO-8859-1")
     df = df[df['macroeconomic indicator'] == 'bnpb.nr23_9 Gross domestic product, market values']
-    df = df[df['contents'] == 'Change in value from the previous month, seasonally adjusted (per cent)']  # 'Change in <value/volume> from the previous month, seasonally adjusted (per cent)'
+    df = df[df['contents'] == 'Change in value from the previous month, seasonally adjusted (per cent)']
     df.index = df['month'].apply(lambda row: pd.Timestamp(row.replace('M', '-')+'-01'))
     df = df[(df.index >= start_date) & (df.index <= end_date)]
     df.drop(columns=['macroeconomic indicator', 'month', 'contents'], inplace=True)
@@ -81,9 +90,12 @@ def get_gdp(start_date, end_date):
 
 
 def get_trade_balance(start_date, end_date):
+    """
+    Loads the seasonally adjusted monthly trade balance for the given period using SSB API
+    """
     df = pd.read_csv("https://data.ssb.no/api/v0/dataset/179421.csv?lang=en", encoding="ISO-8859-1")
     df = df[df['trade flow'] == 'Hbtot Trade balance, goods (Total exports - total imports)']
-    df = df[df['contents'] == 'Seasonal adjusted']  # 'Unadjusted'
+    df = df[df['contents'] == 'Seasonal adjusted']
     df.index = df['month'].apply(lambda row: pd.Timestamp(row.replace('M', '-')+'-01'))
     df.drop(columns=['trade flow', 'month', 'contents'], inplace=True)
     df.columns = ['trade_balance']
@@ -93,6 +105,9 @@ def get_trade_balance(start_date, end_date):
 
 
 def get_yahoo_data(ticker_code, start_date, end_date):
+    """
+    Function that uses the Yahoo API to return the monthly average of the historical closing price in the given period
+    """
     c = yf.Ticker(ticker_code)
     load_months_back = math.ceil((pd.Timestamp.today()-start_date).days / 20)
     df = c.history(period=f"{load_months_back}mo")
@@ -103,14 +118,23 @@ def get_yahoo_data(ticker_code, start_date, end_date):
 
 
 def get_oil_price(start_date, end_date):
+    """
+    Loads the monthly Brent Crude Oil price in the given period
+    """
     return get_yahoo_data('BZ=F', start_date, end_date).rename(columns={0: 'oil_price'})
 
 
 def get_gas_price(start_date, end_date):
+    """
+    Loads the monthly Dutch TTF Natural Gas price in the given period
+    """
     return get_yahoo_data('TTF=F', start_date, end_date).rename(columns={0: 'gas_price'})
 
 
 def get_historical_data(start_date, end_date, rate):
+    """
+    Loads all the input data in the given period and returns it in a monthly Pandas Dataframe
+    """
     frames = [get_exchange_rates(start_date, end_date, rate),
               get_interest_rates(start_date, end_date),
               get_cpi(start_date, end_date),
