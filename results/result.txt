@@ -42,7 +42,7 @@ Name: 6, dtype: float64
 Dep. Variable:          exchange_rate   No. Observations:                   72
 Model:                 ARIMA(2, 1, 0)   Log Likelihood                  23.544
 Date:                Fri, 11 Apr 2025   AIC                            -29.087
-Time:                        13:32:41   BIC                             -8.723
+Time:                        14:36:06   BIC                             -8.723
 Sample:                    01-01-2018   HQIC                           -20.989
                          - 12-01-2023                                         
 Covariance Type:                  opg                                         
@@ -68,8 +68,9 @@ Prob(H) (two-sided):                  0.00   Kurtosis:                         5
 Warnings:
 [1] Covariance matrix calculated using the outer product of gradients (complex-step).
 
-Ljung-Box Test Results:     lb_stat  lb_pvalue
-12  0.068347        1.0
+Ljung-Box Test Results:
+LB Statistic: 0.06834709761745023
+P-value: 0.9999999999978517
 
 Augmented Dickey-Fuller Test:
 ADF Statistic: -64.99700677991467
@@ -81,7 +82,7 @@ Statistic: 0.18005573749542236
 P-value: 4.310331465714808e-18
 
 Breusch-Pagan Test Results:
-                    Lagrange Multiplier Statistic  ...  f-test p-value
-Breusch-Pagan Test                       1.439277  ...        0.968688
-
-[1 rows x 4 columns]
+Lagrange Multiplier Statistic: 1.4392765975467414
+p-value: 0.9634256847870266
+f-value: 0.2209751032618754
+f-test p-value: 0.9686884183103841

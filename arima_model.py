@@ -77,7 +77,8 @@ output_file.write('\n\n'+str(model_fit.summary()))
 residuals = model_fit.resid
 ljung_box_results = acorr_ljungbox(residuals, lags=[12], return_df=True)
 output_file.write("\n\nLjung-Box Test Results:")
-output_file.write(str(ljung_box_results))
+output_file.write(f"\nLB Statistic: {ljung_box_results.values[0][0]}")
+output_file.write(f"\nP-value: {ljung_box_results.values[0][1]}")
 
 # Augmented Dickey-Fuller test
 adf_stat, p_value, _, _, critical_values, _ = adfuller(residuals)
@@ -94,14 +95,11 @@ output_file.write(f"\nP-value: {shapiro_p_value}")
 
 # Breusch-Pagan Test
 bp_test = het_breuschpagan(residuals, sm.add_constant(model_fit.model.exog))
-bp_results = pd.DataFrame({
-    'Lagrange Multiplier Statistic': bp_test[0],
-    'p-value': bp_test[1],
-    'f-value': bp_test[2],
-    'f-test p-value': bp_test[3]
-}, index=['Breusch-Pagan Test'])
 output_file.write("\n\nBreusch-Pagan Test Results:")
-output_file.write('\n' + str(bp_results))
+output_file.write(f'\nLagrange Multiplier Statistic: {bp_test[0]}')
+output_file.write(f'\np-value: {bp_test[1]}')
+output_file.write(f'\nf-value: {bp_test[2]}')
+output_file.write(f'\nf-test p-value: {bp_test[3]}')
 
 # Diagnostic plots
 model_fit.plot_diagnostics(figsize=(12, 8))
