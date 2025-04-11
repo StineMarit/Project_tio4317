@@ -1,6 +1,7 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 from scipy import stats
+import statsmodels.api as sm
 from statsmodels.tsa.arima.model import ARIMA
 from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
 from statsmodels.tsa.stattools import adfuller
@@ -13,7 +14,6 @@ rate = 'EUR'
 training_start = pd.Timestamp('2018-01-01')
 training_end = pd.Timestamp('2023-12-31')
 prediction_end = pd.Timestamp('2024-12-31')
-
 output_file = open(f'results\\result.txt', 'w')
 
 # Collect input data
@@ -21,7 +21,6 @@ df = get_historical_data(start_date=training_start, end_date=prediction_end, rat
 df.to_csv("data\\input_data.csv")
 training_df = df.loc[:training_end]
 test_df = df.loc[training_end:]
-
 
 # Perform Differencing to estimate d
 fig, (ax1, ax2) = plt.subplots(2, figsize=(8, 4), sharex=True)
@@ -64,20 +63,20 @@ for p in range(order):
 results_df = pd.DataFrame(results)
 output_file.write("Estimate Best Values for p and q\n")
 output_file.write(str(results_df))
-output_file.write(f"\nBest model based on AIC:\n{results_df.loc[results_df['AIC'].idxmin()]}")
-output_file.write(f"\nBest model based on BIC:\n{results_df.loc[results_df['BIC'].idxmin()]}")
-output_file.write(f"\nBest model based on HQIC:\n{results_df.loc[results_df['HQIC'].idxmin()]}")
+output_file.write(f"\n\nBest model based on AIC:\n{results_df.loc[results_df['AIC'].idxmin()]}")
+output_file.write(f"\n\nBest model based on BIC:\n{results_df.loc[results_df['BIC'].idxmin()]}")
+output_file.write(f"\n\nBest model based on HQIC:\n{results_df.loc[results_df['HQIC'].idxmin()]}")
 p, q = 2, 0
 
 # Fit an ARIMA model
 model = ARIMA(training_df['exchange_rate'], exog=training_df.drop(columns=['exchange_rate']), order=(p, d, q))
 model_fit = model.fit()
-output_file.write('\n'+str(model_fit.summary()))
+output_file.write('\n\n'+str(model_fit.summary()))
 
 # Ljung-Box test
 residuals = model_fit.resid
 ljung_box_results = acorr_ljungbox(residuals, lags=[12], return_df=True)
-output_file.write("\nLjung-Box Test Results:")
+output_file.write("\n\nLjung-Box Test Results:")
 output_file.write(str(ljung_box_results))
 
 # Augmented Dickey-Fuller test
@@ -93,16 +92,16 @@ output_file.write("\n\nShapiro-Wilk Test:")
 output_file.write(f"\nStatistic: {shapiro_stat}")
 output_file.write(f"\nP-value: {shapiro_p_value}")
 
-# 4. Breusch-Pagan Test
-# bp_test = het_breuschpagan(residuals, model_fit.model.exog)
-# bp_results = pd.DataFrame({
-#     'Lagrange Multiplier Statistic': bp_test[0],
-#     'p-value': bp_test[1],
-#     'f-value': bp_test[2],
-#     'f-test p-value': bp_test[3]
-# }, index=['Breusch-Pagan Test'])
-# output_file.write("\n\nBreusch-Pagan Test Results:")
-# output_file.write('\n' + str(bp_results))
+# Breusch-Pagan Test
+bp_test = het_breuschpagan(residuals, sm.add_constant(model_fit.model.exog))
+bp_results = pd.DataFrame({
+    'Lagrange Multiplier Statistic': bp_test[0],
+    'p-value': bp_test[1],
+    'f-value': bp_test[2],
+    'f-test p-value': bp_test[3]
+}, index=['Breusch-Pagan Test'])
+output_file.write("\n\nBreusch-Pagan Test Results:")
+output_file.write('\n' + str(bp_results))
 
 # Diagnostic plots
 model_fit.plot_diagnostics(figsize=(12, 8))
@@ -123,7 +122,7 @@ for ci in confidence_intervals:
 
 forecast_df.to_csv("data\\forecast.csv")
 
-# Combine actual and forecast for visualization
+# Plots of forecast, actual and confidence intervals
 plt.figure(figsize=(12, 6))
 plt.plot(df['exchange_rate'], label='Actual Exchange Rate', color='blue')
 plt.plot(forecast_df['forecast'], label='Forecasted Exchange Rate', color='orange', linestyle='--')
@@ -150,9 +149,7 @@ plt.plot(df.loc[training_end:, 'exchange_rate'], label='Actual', color='blue')
 plt.plot(forecast_df['forecast'], label='Forecast', color='orange')
 start_transparency = 0.3
 for ci in confidence_intervals:
-    plt.fill_between(forecast_df.index,
-                     forecast_df[f'lower_bound_{ci}'],
-                     forecast_df[f'upper_bound_{ci}'],
+    plt.fill_between(forecast_df.index, forecast_df[f'lower_bound_{ci}'], forecast_df[f'upper_bound_{ci}'],
                      color='grey', alpha=start_transparency, label=f'{ci}% Confidence Interval')
     start_transparency += 0.2
 plt.title('Forecast Confidence Intervals')
