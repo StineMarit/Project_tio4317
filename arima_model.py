@@ -37,7 +37,7 @@ d = 1
 
 # Estimate Best Values for p and q based on AIC, BIC, and HQIC
 lags = 12
-diff_series = training_df['exchange_rate'].diff()
+diff_series = training_df['exchange_rate'].diff().dropna()
 fig, axes = plt.subplots(1, 2, figsize=(8, 4))
 plot_acf(diff_series, lags=lags, ax=axes[0])
 axes[0].set_title('ACF of First Order Differenced Series')

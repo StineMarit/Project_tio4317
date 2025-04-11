@@ -38,7 +38,7 @@ Name: 6, dtype: float64
 Dep. Variable:          exchange_rate   No. Observations:                   72
 Model:                 ARIMA(2, 1, 0)   Log Likelihood                  23.544
 Date:                Fri, 11 Apr 2025   AIC                            -29.087
-Time:                        13:14:41   BIC                             -8.723
+Time:                        13:22:57   BIC                             -8.723
 Sample:                    01-01-2018   HQIC                           -20.989
                          - 12-01-2023                                         
 Covariance Type:                  opg                                         
